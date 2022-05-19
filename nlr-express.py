@@ -8,6 +8,8 @@ from src.ModelData import *
 from src.ModuleData import *
 from src.FeaturesData import *
 from src.util import *
+import logging
+from datetime import datetime
 
 sys.path.insert(0, os.path.abspath("."))
 
@@ -44,8 +46,13 @@ def cli():
 
 
 
-def predict( input: Path, outdir: Path, module: str, outformat:str, skipJhmmer=True ):
+def predict( input: Path, outdir: Path, module: str, outformat:str, skipJhmmer=False ):
     """Predict NLR-related motifs"""
+
+    setupLogger(input, outdir)
+    logger = logging.getLogger("")
+    logger.info(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + '############ NLRexpress started ############ ')
+
 
     if module == 'cc':
         motifs = {key: allMotifs[key] for key in ['extendedEDVID']}
@@ -65,12 +72,20 @@ def predict( input: Path, outdir: Path, module: str, outformat:str, skipJhmmer=T
     results = {}
 
     if module in ("cc", "all") :
+        logger.info(
+            datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Running CCexpress : started')
         CCexpress = ModuleData.loadModels(
             modelsPath = { 'extendedEDVID': 'models/MLP_CC_extendedEDVID.pkl' })
         for p in CCexpress.predictors:
             results[p] = CCexpress.predictors[p].model.predict_proba( inputData.X[ p ] )
+            logger.info(
+                datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Running CCexpress : Running ' + p + ' predictor: ...done')
+        logger.info(
+            datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Running CCexpress : done')
 
     if module in ("nbs", "all") :
+        logger.info(
+            datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Running NBSexpress : started')
         NBSexpress = ModuleData.loadModels(
             modelsPath={
                           'VG': 'models/MLP_NBS_VG.pkl',
@@ -85,21 +100,52 @@ def predict( input: Path, outdir: Path, module: str, outformat:str, skipJhmmer=T
                          })
         for p in NBSexpress.predictors:
             results[p] = NBSexpress.predictors[p].model.predict_proba( inputData.X[ p ] )
+            logger.info(
+                datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Running NBSexpress : Running ' + p + ' predictor: ...done')
+        logger.info(
+            datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Running NBSexpress ...done')
 
 
     if module in ("lrr", "all") :
+        logger.info(
+            datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Running LRRexpress ...started')
         LRRexpress = ModuleData.loadModels(
             modelsPath={'LxxLxL': 'models/MLP_LRR_LxxLxL.pkl'})
         for p in LRRexpress.predictors:
             results[p] = LRRexpress.predictors[p].model.predict_proba( inputData.X[ p ] )
+            logger.info(
+                datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Running LRRexpress : Running ' + p + ' predictor: ...done')
+        logger.info(
+            datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Running LRRexpress ...done')
+
+    logger.info(
+        datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Printing final results...started')
+
 
     printResultsOutput(Path(input).stem, outdir, inputData, results, outformat)
 
+    logger.info(
+        datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Printing final results...done')
+
+    logger.info( datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + '############ NLRexpress finished ############ ')
+
+
+
+
+
+
+def setupLogger(input: Path, outdir: Path) :
+    logging.basicConfig(filename= str(outdir) + '/' + Path(input).stem + '.log', level=logging.DEBUG)
+    console = logging.StreamHandler()
+    console.setLevel(logging.DEBUG)
+    logger = logging.getLogger('').addHandler(console)
+    return logger
+
+
 
 if __name__ == '__main__':
+
     predict()
-
-
 
 
 

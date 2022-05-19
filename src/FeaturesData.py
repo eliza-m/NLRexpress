@@ -1,6 +1,8 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
+import logging
+from datetime import datetime
 from .MultiFASTA import *
 import sys
 import subprocess
@@ -56,27 +58,58 @@ def generateFeatures( inputFasta:Path, outdir:Path, motifs:dict, skipJhmmer=Fals
     :return:
     """
 
+    logger = logging.getLogger("")
+
     # STEP 1: Check FASTA file
+
+    logger.info(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Checking FASTA file - started')
+
     seqData = parseFastaFile( inputFasta )
+    processesInputFasta = Path( str(outdir) + "/" + str(inputFasta.stem) + '.fasta_proc')
+    seqData.write_fasta( processesInputFasta )
+
+    logger.info( datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Checking FASTA file - done')
+
 
     # STEP 2: Run Jhmmer if needed
+
     if not skipJhmmer:
 
         # not all Jhmmer params were added, as the training was done with specific params and therefore for
         # new data the same params should be used. For now only cpuNum and targetDB path are customizable
         # from here
         params = { 'cpuNum':4,
-                    'targetDB': "../hmmer_db/targetDB.fasta" }
+                    'targetDB': "hmmer_db/targetDB.fasta" }
 
-        runJhmmer(inputFasta, outdir, params)
+        logger.info(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Running JackHMMER - started')
+        jhmmerLog = runJhmmer(processesInputFasta, outdir, params)
+        logger.info(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Running JackHMMER - done')
 
 
     # STEP 3: Parse and organize HMM data; generate input file for later use;
 
-    hmm_it1 = parse_hmm_multiprot( str(outdir) + "/" + str(inputFasta.stem) + '-1.hmm' )
-    hmm_it2 = parse_hmm_multiprot( str(outdir) + "/" + str(inputFasta.stem) + '-2.hmm' )
+    logger.info(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Preparing features: Parsing HMM profile - started')
 
-    hmmData = generateInputFile( seqData, hmm_it1, hmm_it2, inputFasta, outdir, annotations )
+    try:
+        hmmFile1 = str(outdir) + "/" + str(processesInputFasta.stem) + '-1.hmm'
+        hmm_it1 = parse_hmm_multiprot( hmmFile1 )
+    except FileNotFoundError:
+        raise FileNotFoundError('Preparing features: HMM profile iteration 1 was not found at. Execution stopped ')
+
+    try:
+        hmmFile2 = str(outdir) + "/" + str(processesInputFasta.stem) + '-2.hmm'
+        hmm_it2 = parse_hmm_multiprot( hmmFile2 )
+
+    except FileNotFoundError:
+        logger.warning(
+            datetime.now().strftime(
+                "%d/%m/%Y %H:%M:%S") + ':\t' + 'Preparing features: HMM profile iteration 2 was not found at: '
+                + hmmFile2 + '. The first iteration HMM profile will be used alone.')
+        hmm_it2 = parse_hmm_multiprot( hmmFile1 )
+
+
+    hmmData = generateInputFile( seqData, hmm_it1, hmm_it2, processesInputFasta, outdir, annotations )
+    logger.info(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Preparing features: Parsing HMM profile - started')
 
 
     ###############################################################
@@ -85,6 +118,8 @@ def generateFeatures( inputFasta:Path, outdir:Path, motifs:dict, skipJhmmer=Fals
     X = { motif: [] for motif in motifs }
     # data[name] = {'seq': seq,
     #               'features': []}
+
+    logger.info( datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Preparing features: NN input - started')
 
     for prot in hmmData:
         seqLength = len( hmmData[prot]['seq'] )
@@ -101,6 +136,8 @@ def generateFeatures( inputFasta:Path, outdir:Path, motifs:dict, skipJhmmer=Fals
                     X[motif].append([])
                     for w in range(windLeft * (-1), motifSpan + windRight + 1):
                         X[motif][-1] += features[i+w]
+
+    logger.info(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Preparing features: NN input - done')
 
     return FeaturesData( seqData=seqData, hmmData=hmmData, X=X)
 
@@ -135,9 +172,14 @@ def generateInputFile( seqData:MultiFASTA, hmm_it1:dict, hmm_it2:dict, inputFast
                         print(val, end='\t', file=outfile)
                         data[name]['features'][-1].append(val)
 
-                    for k, (key, val) in enumerate( hmm_it2[name][i].items() ):
-                        print(val, end='\t', file=outfile)
-                        data[name]['features'][-1].append(val)
+                    if name in hmm_it2:
+                        for k, (key, val) in enumerate( hmm_it2[name][i].items() ):
+                            print(val, end='\t', file=outfile)
+                            data[name]['features'][-1].append(val)
+                    else:
+                        for k, (key, val) in enumerate( hmm_it1[name][i].items() ):
+                            print(val, end='\t', file=outfile)
+                            data[name]['features'][-1].append(val)
 
                     print(file=outfile)
     # except :
@@ -183,7 +225,7 @@ def runJhmmer( inputFasta:Path, outdir:Path, params:dict ) -> str :
     # from here
 
     jhhmerLog = subprocess.run(["jackhmmer",
-                                "--cpu", str(params["CpuNum"]),
+                                "--cpu", str(params["cpuNum"]),
                                 "-o", "/dev/null",
                                 "-N", "2",
                                 "-E", "1e-5",
@@ -205,8 +247,8 @@ def runJhmmer( inputFasta:Path, outdir:Path, params:dict ) -> str :
 def valideteJhmmerLog(jhhmerLog:str):
     # not implemented
     # TODO check the Jhmmer log for red flags
-    return 1;
 
+    return 1;
 
 
 
@@ -225,8 +267,9 @@ def parse_hmm_multiprot( hmmFile:Path ) -> dict:
 
     hmm = {}
 
-    try:
+    logger = logging.getLogger("")
 
+    try:
         with open(hmmFile, 'r') as f:
             lines = f.readlines()
 
@@ -254,8 +297,13 @@ def parse_hmm_multiprot( hmmFile:Path ) -> dict:
 
                 elif start > 0 and i >= start and i <= 3*(start + length) :
                     if not hascomp:
+                        logger.error(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' +
+                                     "Problem parsing HMM file: no COMP line was found for prot " + name + line )
                         raise Exception( "Problem parsing HMM file: no COMP line was found for prot ", name, line )
+
                     elif length == 0:
+                        logger.error(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' +
+                                     "Problem parsing HMM file: no LENGTH line was found for prot " + name)
                         raise Exception( "Problem parsing HMM file: no LENGTH line was found for prot ", name )
 
                     else:
@@ -268,10 +316,20 @@ def parse_hmm_multiprot( hmmFile:Path ) -> dict:
                                     if val == '*': val = 'inf'
                                     hmm[name][-1][header1[i]] = float(val)
 
-    except:
-       raise Exception( "Something went wrong when parsing the HMM file ", hmmFile )
+        return hmm
 
-    return hmm
+    except FileNotFoundError:
+        logger.error(
+            datetime.now().strftime(
+                "%d/%m/%Y %H:%M:%S") + ':\t' + 'Preparing features: HMM profile not found at: ' + str(hmmFile))
+        raise FileNotFoundError('Preparing features: HMM profile not found at: ' + str(hmmFile))
+
+    except:
+       logger.error( datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' +
+                     "Something went wrong when parsing the HMM file " + str(hmmFile) )
+       raise Exception( "Something went wrong when parsing the HMM file ", str(hmmFile) )
+
+
 
 
 
