@@ -21,7 +21,7 @@ class ModelData:
         """" Loads model binary file into the object """
 
         model = pickle.load(open(path, 'rb'))
-        return ModelData(name=self.name, modelPath=path, models=model, params=self.params)
+        return ModelData(name=self.name, modelPath=path, model=model, params=self.params)
 
 
     def train(self, X, Y, params, outFile:Path, printToFile=False) -> ModelData :
