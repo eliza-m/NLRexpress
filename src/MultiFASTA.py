@@ -1,4 +1,7 @@
 from bioservices.apps import FASTA, MultiFASTA
+import logging
+from datetime import datetime
+import re
 
 
 class MultiFASTA(MultiFASTA):
@@ -39,3 +42,13 @@ class MultiFASTA(MultiFASTA):
             else:
                 print("Accession %s is already in the ids list or could not be interpreted. skipped" % str(
                     f.accession))
+
+    def write_fasta(self, filename):
+        with open(filename, 'w') as outFastaFile:
+            for n in range(len(self.df.Accession)):
+                name = self.df.Accession[n]
+                seq = re.sub(r"[\n\t\s]*", "", self.df.Sequence[n])
+                print('>', name, sep='', file=outFastaFile)
+                print(seq, file=outFastaFile)
+
+
