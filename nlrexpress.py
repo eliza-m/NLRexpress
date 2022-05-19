@@ -24,7 +24,7 @@ def cli():
 @click.option('--module', required=True, help="""\b
                         Predifined prediction modules :
                           - cc  :  CCexpress contains motif predictors for the CC domain:
-                                                    extendedEDVID: rdhhhdhEDVID
+                                                    extEDVID: rdhhhdhEDVID
                           - nbs :  NBSexpress contains motif predictors for the NBS/NBARC domain:
                                                     VG:            bbGRx
                                                     P-loop:        GbGGbGKTT
@@ -55,7 +55,7 @@ def predict( input: Path, outdir: Path, module: str, outformat:str, skipJhmmer=F
 
 
     if module == 'cc':
-        motifs = {key: allMotifs[key] for key in ['extendedEDVID']}
+        motifs = {key: allMotifs[key] for key in ['extEDVID']}
     elif module == 'nbs':
         motifs = { key: allMotifs[key] for key in
                                      ["VG", "P-loop", "Walker-B", "RNSB-A", "RNSB-B", "RNSB-C", "RNSB-D", "GLPL", "MHD" ] }
@@ -75,7 +75,7 @@ def predict( input: Path, outdir: Path, module: str, outformat:str, skipJhmmer=F
         logger.info(
             datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Running CCexpress : started')
         CCexpress = ModuleData.loadModels(
-            modelsPath = { 'extendedEDVID': 'models/MLP_CC_extendedEDVID.pkl' })
+            modelsPath = { 'extEDVID': 'models/MLP_CC_extEDVID.pkl' })
         for p in CCexpress.predictors:
             results[p] = CCexpress.predictors[p].model.predict_proba( inputData.X[ p ] )
             logger.info(

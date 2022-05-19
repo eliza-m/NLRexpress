@@ -22,7 +22,7 @@ import re
 # }
 
 allMotifs = {
-    "extendedEDVID": {"windLeft": 5, "windRight": 5, "motifSpan": 12},
+    "extEDVID": {"windLeft": 5, "windRight": 5, "motifSpan": 12},
     "VG": {"windLeft": 5, "windRight": 5, "motifSpan": 5},
     "P-loop": {"windLeft": 5, "windRight": 5, "motifSpan": 9},
     "RNSB-A": {"windLeft": 5, "windRight": 5, "motifSpan": 10},
@@ -195,9 +195,9 @@ def processFastaFile( input:Path, output:Path) -> dict :
     try:
         with open( input, 'r' ) as inputFile :
             lines = inputFile.readlines()
-            for line in lines:
+            for i, line in enumerate(lines):
                 if line[0] == ">":
-                    if len(seqData) != 0:
+                    if i>0:
                         seqData[ name ] = seq
                     name = line.split()[0][1:]
                     seq = ''
