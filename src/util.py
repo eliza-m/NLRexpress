@@ -23,10 +23,11 @@ def printResultsOutput(inputRoot: str, outdir:Path, inputData: FeaturesData, res
         print("#ProtName", "ResID_start", "Motif", "Proba", " | 5 positions upstream | Motif | 5 positions downstream | ", sep='\t', file=shortFile)
 
 
-    for prot in inputData.hmmData:
+    for prot in inputData.seqData:
 
-            seqLength = len(inputData.hmmData[prot]["seq"])
-            for i, aa in enumerate( inputData.hmmData[prot]["seq"] ):
+            seq = inputData.seqData[prot]
+            seqLength = len(seq)
+            for i, aa in enumerate( seq ):
 
                 if outformat in ["all", "long"]:
                     print(prot, i + 1, aa, sep='\t', end='\t', file=longFile)
@@ -42,9 +43,9 @@ def printResultsOutput(inputRoot: str, outdir:Path, inputData: FeaturesData, res
 
                             if round(results[motif][countpos[motif]][1], 4) >= cutoff :
                                 print(prot, i + 1, aa, motif, round(results[motif][countpos[motif]][1], 4),
-                                  inputData.hmmData[prot]["seq"][ i-5 : i ],
-                                  inputData.hmmData[prot]["seq"][ i : i + allMotifs[motif]["motifSpan"] + 1 ],
-                                  inputData.hmmData[prot]["seq"][ i + allMotifs[motif]["motifSpan"] + 1 : i + allMotifs[motif]["motifSpan"] + 6],
+                                  seq[ i-5 : i ],
+                                  seq[ i : i + allMotifs[motif]["motifSpan"] + 1 ],
+                                  seq[ i + allMotifs[motif]["motifSpan"] + 1 : i + allMotifs[motif]["motifSpan"] + 6],
                                   sep='\t', file=shortFile)
                         countpos[motif] += 1
                     elif outformat in ["all", "long"]:

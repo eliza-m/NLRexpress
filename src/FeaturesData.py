@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from pathlib import Path
 import logging
 from datetime import datetime
-from .MultiFASTA import *
 import sys
 import subprocess
 import re
@@ -43,7 +42,7 @@ class FeaturesData:
     """
 
     """
-    seqData: MultiFASTA
+    seqData: dict
     hmmData: dict
     X: dict
 
@@ -64,9 +63,8 @@ def generateFeatures( inputFasta:Path, outdir:Path, motifs:dict, skipJhmmer=Fals
 
     logger.info(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Checking FASTA file - started')
 
-    seqData = parseFastaFile( inputFasta )
-    processesInputFasta = Path( str(outdir) + "/" + str(inputFasta.stem) + '.fasta_proc')
-    seqData.write_fasta( processesInputFasta )
+    processesInputFasta = Path(str(outdir) + "/" + str(inputFasta.stem) + '.fasta_proc')
+    seqData = processFastaFile( inputFasta, processesInputFasta )
 
     logger.info( datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Checking FASTA file - done')
 
@@ -122,7 +120,7 @@ def generateFeatures( inputFasta:Path, outdir:Path, motifs:dict, skipJhmmer=Fals
     logger.info( datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Preparing features: NN input - started')
 
     for prot in hmmData:
-        seqLength = len( hmmData[prot]['seq'] )
+        seqLength = len( seqData[prot] )
 
         for i in range(seqLength):
             for motif in motifs:
@@ -131,7 +129,7 @@ def generateFeatures( inputFasta:Path, outdir:Path, motifs:dict, skipJhmmer=Fals
                 motifSpan = motifs[motif]["motifSpan"]
 
                 if i >= windLeft and i < seqLength - ( motifSpan + windRight) :
-                    features = hmmData[prot]['features']
+                    features = hmmData[prot]
 
                     X[motif].append([])
                     for w in range(windLeft * (-1), motifSpan + windRight + 1):
@@ -144,7 +142,7 @@ def generateFeatures( inputFasta:Path, outdir:Path, motifs:dict, skipJhmmer=Fals
 
 
 
-def generateInputFile( seqData:MultiFASTA, hmm_it1:dict, hmm_it2:dict, inputFasta:Path, outdir:Path, annotations:dict  ) -> dict:
+def generateInputFile( seqData:dict, hmm_it1:dict, hmm_it2:dict, inputFasta:Path, outdir:Path, annotations:dict  ) -> dict:
     """
     :param seqData:
     :param hmm_it1:
@@ -157,29 +155,27 @@ def generateInputFile( seqData:MultiFASTA, hmm_it1:dict, hmm_it2:dict, inputFast
     # try:
     with open( str(outdir) + "/" + str(inputFasta.stem) + '.input', 'w' ) as outfile :
 
-            for n in range(len(seqData.df.Accession)):
-                name = seqData.df.Accession[n]
-                seq = re.sub( r"[\n\t\s]*", "", seqData.df.Sequence[n] )
-                data[name] = {'seq':seq,
-                              'features':[]}
+            for name in seqData:
+                seq = seqData[name]
+                data[name] = []
 
                 for i, aa in enumerate(seq):
                     anno = annotations[name][i] if len(annotations) != 0 else '-'
                     print( name, i+1, aa, anno, sep='\t', end='\t', file=outfile )
-                    data[name]['features'].append([])
+                    data[name].append([])
 
                     for k, (key, val) in enumerate( hmm_it1[name][i].items() ):
                         print(val, end='\t', file=outfile)
-                        data[name]['features'][-1].append(val)
+                        data[name][-1].append(val)
 
                     if name in hmm_it2:
                         for k, (key, val) in enumerate( hmm_it2[name][i].items() ):
                             print(val, end='\t', file=outfile)
-                            data[name]['features'][-1].append(val)
+                            data[name][-1].append(val)
                     else:
                         for k, (key, val) in enumerate( hmm_it1[name][i].items() ):
                             print(val, end='\t', file=outfile)
-                            data[name]['features'][-1].append(val)
+                            data[name][-1].append(val)
 
                     print(file=outfile)
     # except :
@@ -190,14 +186,29 @@ def generateInputFile( seqData:MultiFASTA, hmm_it1:dict, hmm_it2:dict, inputFast
 
 
 
-def parseFastaFile( input:Path) -> MultiFASTA :
+def processFastaFile( input:Path, output:Path) -> dict :
 
     # TODO implement a better FASTA file check
 
-    seqData = MultiFASTA()
+    seqData = {}
 
     try:
-        seqData.read_fasta(input)
+        with open( input, 'r' ) as inputFile :
+            lines = inputFile.readlines()
+            for line in lines:
+                if line[0] == ">":
+                    if len(seqData) != 0:
+                        seqData[ name ] = seq
+                    name = line.split()[0][1:]
+                    seq = ''
+                else:
+                    seq += line[:-1]
+            seqData[name] = seq
+
+        with open(output, 'w') as outputFile:
+            for name in seqData:
+                print('>', name, sep='', file=outputFile)
+                print(seqData[name], file=outputFile)
 
     except OSError as e:
         print("FASTA file error:", sys.exc_info()[0])
