@@ -47,7 +47,7 @@ class FeaturesData:
     X: dict
 
 
-def generateFeatures( inputFasta:Path, outdir:Path, motifs:dict, cpuNum:int, skipJhmmer=False, annotations={}, writeInputFile=False) -> FeaturesData :
+def generateFeatures( inputFasta:Path, outdir:Path, motifs:dict, cpuNum:int, skipJhmmer:bool, writeInputFile:bool, annotations={}) -> FeaturesData :
     """
 
     :param inputFasta:
@@ -71,7 +71,7 @@ def generateFeatures( inputFasta:Path, outdir:Path, motifs:dict, cpuNum:int, ski
 
     # STEP 2: Run Jhmmer if needed
 
-    if not skipJhmmer:
+    if skipJhmmer == 'False':
 
         # not all Jhmmer params were added, as the training was done with specific params and therefore for
         # new data the same params should be used. For now only cpuNum and targetDB path are customizable
@@ -154,7 +154,7 @@ def generateInputFile( seqData:dict, hmm_it1:dict, hmm_it2:dict, inputFasta:Path
     data = {}
     # try:
 
-    if writeInputFile:
+    if writeInputFile == 'True':
         outfile = open( str(outdir) + "/" + str(inputFasta.stem) + '.input', 'w' )
 
 
@@ -164,28 +164,28 @@ def generateInputFile( seqData:dict, hmm_it1:dict, hmm_it2:dict, inputFasta:Path
         data[name] = []
 
         for i, aa in enumerate(seq):
-            if writeInputFile:
+            if writeInputFile == 'True':
                 anno = annotations[name][i] if len(annotations) != 0 else '-'
                 print( name, i+1, aa, anno, sep='\t', end='\t', file=outfile )
             data[name].append([])
 
             for k, (key, val) in enumerate( hmm_it1[name][i].items() ):
-                if writeInputFile:
+                if writeInputFile == 'True':
                     print(val, end='\t', file=outfile)
                 data[name][-1].append(val)
 
             if name in hmm_it2:
                 for k, (key, val) in enumerate( hmm_it2[name][i].items() ):
-                    if writeInputFile:
+                    if writeInputFile == 'True':
                         print(val, end='\t', file=outfile)
                     data[name][-1].append(val)
             else:
                 for k, (key, val) in enumerate( hmm_it1[name][i].items() ):
-                    if writeInputFile:
+                    if writeInputFile == 'True':
                         print(val, end='\t', file=outfile)
                     data[name][-1].append(val)
 
-            if writeInputFile: print(file=outfile)
+            if writeInputFile == 'True': print(file=outfile)
     # except :
     #     print("Something went wronfg ", sys.exc_info()[0])
     #     raise

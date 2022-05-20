@@ -1,11 +1,5 @@
 from __future__ import annotations
 from dataclasses import dataclass
-from pathlib import Path
-import pickle
-import logging
-from datetime import datetime
-
-
 from .ModelData import ModelData
 
 @dataclass
@@ -27,6 +21,7 @@ class ModuleData:
             predictor = ModelData( name=predictorName, model='', modelPath=modelsPath[ predictorName ], params=[])
             predictors[ predictorName ] = predictor.loadModel( modelsPath[ predictorName ] )
             predictorNames.append( predictorName )
+
 
         return ModuleData( modelsPath=modelsPath, predictors=predictors, predictorsNames=predictorNames )
 

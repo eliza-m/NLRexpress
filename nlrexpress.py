@@ -1,17 +1,9 @@
-import os
 import click
-import subprocess
-from bioservices.apps import FASTA
-from pathlib import Path
-
-from src.ModelData import *
 from src.ModuleData import *
-from src.FeaturesData import *
 from src.util import *
 import logging
 from datetime import datetime
-
-import mkl
+import os
 
 
 sys.path.insert(0, os.path.abspath("."))
@@ -47,16 +39,16 @@ def cli():
                           - long           : All predicted residues will be printed ( one line per residue )
                           - all [default]  : Both short and long output formats are generated  """)
 
-@click.option('--cpuNum', required=False, default=4,  help="""\b
+@click.option('--cpunum', required=False, default=4,  help="""\b
                         Set the number of CPU threads to be used. """)
 
-@click.option('--writeInputFile', required=False, default=True,  help="""\b
+@click.option('--writeinputfile', required=False, default=True,  help="""\b
                         Write input file to be used in case of job intreruption. """)
 
-@click.option('--skipJhmmer', required=False, default="False", hidden=True)
+@click.option('--skipjhmmer', required=False, default="False", hidden=True)
 
 
-def predict( input: Path, outdir: Path, module: str, outformat:str, cpuNum:int, skipJhmmer=False, writeInputFile=True ):
+def predict( input: Path, outdir: Path, module: str, outformat:str, cpunum:int, skipjhmmer:bool, writeinputfile:bool ):
     """Predict NLR-related motifs"""
 
     setupLogger(input, outdir)
@@ -78,8 +70,9 @@ def predict( input: Path, outdir: Path, module: str, outformat:str, cpuNum:int, 
         print("No such module present. Please use one of the following: cc, nbs, lrr, all")
         raise()
 
-    inputData = generateFeatures( inputFasta=Path(input), outdir=Path(outdir), motifs=motifs, skipJhmmer=skipJhmmer, cpuNum=cpuNum, annotations={}, writeInputFile=writeInputFile)
-    mkl.set_num_threads(cpuNum)
+
+
+    inputData = generateFeatures( inputFasta=Path(input), outdir=Path(outdir), motifs=motifs, skipJhmmer=skipjhmmer, cpuNum=cpunum, annotations={}, writeInputFile=writeinputfile)
     results = {}
 
     if module in ("cc", "all") :
@@ -110,7 +103,7 @@ def predict( input: Path, outdir: Path, module: str, outformat:str, cpuNum:int, 
                          'MHD': 'models/MLP_NBS_MHD.pkl'
                          })
         for p in NBSexpress.predictors:
-            results[p] = NBSexpress.predictors[p].model.predict_proba( inputData.X[ p ] )
+            results[p] = NBSexpress.predictors[p].model.predict_proba( inputData.X[ p ])
             logger.info(
                 datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Running NBSexpress : Running ' + p + ' predictor: ...done')
         logger.info(
@@ -155,10 +148,7 @@ def setupLogger(input: Path, outdir: Path) :
 
 
 if __name__ == '__main__':
-
     predict()
-
-
 
 
 

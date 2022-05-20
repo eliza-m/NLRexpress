@@ -6,7 +6,6 @@ import pickle
 import logging
 from datetime import datetime
 
-
 @dataclass
 class ModelData:
     """
