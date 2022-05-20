@@ -47,7 +47,7 @@ class FeaturesData:
     X: dict
 
 
-def generateFeatures( inputFasta:Path, outdir:Path, motifs:dict, skipJhmmer=False, annotations={} ) -> FeaturesData :
+def generateFeatures( inputFasta:Path, outdir:Path, motifs:dict, cpuNum:int, skipJhmmer=False, annotations={}, writeInputFile=False) -> FeaturesData :
     """
 
     :param inputFasta:
@@ -76,7 +76,7 @@ def generateFeatures( inputFasta:Path, outdir:Path, motifs:dict, skipJhmmer=Fals
         # not all Jhmmer params were added, as the training was done with specific params and therefore for
         # new data the same params should be used. For now only cpuNum and targetDB path are customizable
         # from here
-        params = { 'cpuNum':4,
+        params = { 'cpuNum':cpuNum,
                     'targetDB': "hmmer_db/targetDB.fasta" }
 
         logger.info(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Running JackHMMER - started')
@@ -106,7 +106,7 @@ def generateFeatures( inputFasta:Path, outdir:Path, motifs:dict, skipJhmmer=Fals
         hmm_it2 = parse_hmm_multiprot( hmmFile1 )
 
 
-    hmmData = generateInputFile( seqData, hmm_it1, hmm_it2, processesInputFasta, outdir, annotations )
+    hmmData = generateInputFile( seqData, hmm_it1, hmm_it2, processesInputFasta, outdir, annotations, writeInputFile )
     logger.info(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Preparing features: Parsing HMM profile - started')
 
 
@@ -142,7 +142,7 @@ def generateFeatures( inputFasta:Path, outdir:Path, motifs:dict, skipJhmmer=Fals
 
 
 
-def generateInputFile( seqData:dict, hmm_it1:dict, hmm_it2:dict, inputFasta:Path, outdir:Path, annotations:dict  ) -> dict:
+def generateInputFile( seqData:dict, hmm_it1:dict, hmm_it2:dict, inputFasta:Path, outdir:Path, annotations:dict, writeInputFile:bool  ) -> dict:
     """
     :param seqData:
     :param hmm_it1:
@@ -153,31 +153,39 @@ def generateInputFile( seqData:dict, hmm_it1:dict, hmm_it2:dict, inputFasta:Path
 
     data = {}
     # try:
-    with open( str(outdir) + "/" + str(inputFasta.stem) + '.input', 'w' ) as outfile :
 
-            for name in seqData:
-                seq = seqData[name]
-                data[name] = []
+    if writeInputFile:
+        outfile = open( str(outdir) + "/" + str(inputFasta.stem) + '.input', 'w' )
 
-                for i, aa in enumerate(seq):
-                    anno = annotations[name][i] if len(annotations) != 0 else '-'
-                    print( name, i+1, aa, anno, sep='\t', end='\t', file=outfile )
-                    data[name].append([])
 
-                    for k, (key, val) in enumerate( hmm_it1[name][i].items() ):
+
+    for name in seqData:
+        seq = seqData[name]
+        data[name] = []
+
+        for i, aa in enumerate(seq):
+            if writeInputFile:
+                anno = annotations[name][i] if len(annotations) != 0 else '-'
+                print( name, i+1, aa, anno, sep='\t', end='\t', file=outfile )
+            data[name].append([])
+
+            for k, (key, val) in enumerate( hmm_it1[name][i].items() ):
+                if writeInputFile:
+                    print(val, end='\t', file=outfile)
+                data[name][-1].append(val)
+
+            if name in hmm_it2:
+                for k, (key, val) in enumerate( hmm_it2[name][i].items() ):
+                    if writeInputFile:
                         print(val, end='\t', file=outfile)
-                        data[name][-1].append(val)
+                    data[name][-1].append(val)
+            else:
+                for k, (key, val) in enumerate( hmm_it1[name][i].items() ):
+                    if writeInputFile:
+                        print(val, end='\t', file=outfile)
+                    data[name][-1].append(val)
 
-                    if name in hmm_it2:
-                        for k, (key, val) in enumerate( hmm_it2[name][i].items() ):
-                            print(val, end='\t', file=outfile)
-                            data[name][-1].append(val)
-                    else:
-                        for k, (key, val) in enumerate( hmm_it1[name][i].items() ):
-                            print(val, end='\t', file=outfile)
-                            data[name][-1].append(val)
-
-                    print(file=outfile)
+            if writeInputFile: print(file=outfile)
     # except :
     #     print("Something went wronfg ", sys.exc_info()[0])
     #     raise
@@ -204,6 +212,9 @@ def processFastaFile( input:Path, output:Path) -> dict :
                 else:
                     seq += line[:-1]
             seqData[name] = seq
+
+        if len(seqData) > 1000:
+            raise("The input FASTA file contains more than the maximum allowed of 1000 sequences. Please use splitFasta.py to split your input file.")
 
         with open(output, 'w') as outputFile:
             for name in seqData:

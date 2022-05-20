@@ -11,6 +11,9 @@ from src.util import *
 import logging
 from datetime import datetime
 
+import mkl
+
+
 sys.path.insert(0, os.path.abspath("."))
 
 @click.group(chain=True, invoke_without_command=True)
@@ -44,14 +47,22 @@ def cli():
                           - long           : All predicted residues will be printed ( one line per residue )
                           - all [default]  : Both short and long output formats are generated  """)
 
+@click.option('--cpuNum', required=False, default=4,  help="""\b
+                        Set the number of CPU threads to be used. """)
+
+@click.option('--writeInputFile', required=False, default=True,  help="""\b
+                        Write input file to be used in case of job intreruption. """)
+
+@click.option('--skipJhmmer', required=False, default="False", hidden=True)
 
 
-def predict( input: Path, outdir: Path, module: str, outformat:str, skipJhmmer=False ):
+def predict( input: Path, outdir: Path, module: str, outformat:str, cpuNum:int, skipJhmmer=False, writeInputFile=True ):
     """Predict NLR-related motifs"""
 
     setupLogger(input, outdir)
     logger = logging.getLogger("")
     logger.info(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + '############ NLRexpress started ############ ')
+    logger.info(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Input FASTA: ' + str(input) )
 
 
     if module == 'cc':
@@ -64,11 +75,11 @@ def predict( input: Path, outdir: Path, module: str, outformat:str, skipJhmmer=F
     elif module == 'all':
         motifs = allMotifs
     else:
-        print("No such module present. Please use one of the followin: cc, nbs, lrr, all")
+        print("No such module present. Please use one of the following: cc, nbs, lrr, all")
         raise()
 
-    inputData = generateFeatures( inputFasta=Path(input), outdir=Path(outdir), motifs=motifs, skipJhmmer=skipJhmmer, annotations={})
-
+    inputData = generateFeatures( inputFasta=Path(input), outdir=Path(outdir), motifs=motifs, skipJhmmer=skipJhmmer, cpuNum=cpuNum, annotations={}, writeInputFile=writeInputFile)
+    mkl.set_num_threads(cpuNum)
     results = {}
 
     if module in ("cc", "all") :
