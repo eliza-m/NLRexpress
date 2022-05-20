@@ -44,7 +44,6 @@ class FeaturesData:
     """
     seqData: dict
     hmmData: dict
-    X: dict
 
 
 def generateFeatures( inputFasta:Path, outdir:Path, motifs:dict, cpuNum:int, skipJhmmer:bool, writeInputFile:bool, annotations={}) -> FeaturesData :
@@ -107,40 +106,40 @@ def generateFeatures( inputFasta:Path, outdir:Path, motifs:dict, cpuNum:int, ski
 
 
     hmmData = generateInputFile( seqData, hmm_it1, hmm_it2, processesInputFasta, outdir, annotations, writeInputFile )
-    logger.info(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Preparing features: Parsing HMM profile - started')
+
+    return FeaturesData( seqData=seqData, hmmData=hmmData)
 
 
+
+
+def generateXmat (FeaturesData:dict, motif:str):
     ###############################################################
     # STEP 4: Create the X matrices for the requested motifs specs
 
-    X = { motif: [] for motif in motifs }
-    # data[name] = {'seq': seq,
-    #               'features': []}
+    X = []
 
-    logger.info( datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Preparing features: NN input - started')
+    logger = logging.getLogger("")
+    logger.info( datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Preparing features: NN input for motif ' + motif + ' started')
 
-    for prot in hmmData:
-        seqLength = len( seqData[prot] )
+    for prot in FeaturesData.hmmData:
+        seqLength = len( FeaturesData.seqData[prot] )
 
         for i in range(seqLength):
-            for motif in motifs:
-                windLeft = motifs[motif]["windLeft"]
-                windRight = motifs[motif]["windRight"]
-                motifSpan = motifs[motif]["motifSpan"]
+
+                windLeft = allMotifs[motif]["windLeft"]
+                windRight = allMotifs[motif]["windRight"]
+                motifSpan = allMotifs[motif]["motifSpan"]
 
                 if i >= windLeft and i < seqLength - ( motifSpan + windRight) :
-                    features = hmmData[prot]
+                    features = FeaturesData.hmmData[prot]
 
-                    X[motif].append([])
+                    X.append([])
                     for w in range(windLeft * (-1), motifSpan + windRight + 1):
-                        X[motif][-1] += features[i+w]
+                        X[-1] += features[i+w]
 
-    logger.info(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Preparing features: NN input - done')
+    logger.info(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Preparing features: NN input for motif ' + motif + ' done')
 
-    return FeaturesData( seqData=seqData, hmmData=hmmData, X=X)
-
-
-
+    return X
 
 def generateInputFile( seqData:dict, hmm_it1:dict, hmm_it2:dict, inputFasta:Path, outdir:Path, annotations:dict, writeInputFile:bool  ) -> dict:
     """

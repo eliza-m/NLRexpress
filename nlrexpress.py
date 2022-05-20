@@ -81,7 +81,8 @@ def predict( input: Path, outdir: Path, module: str, outformat:str, cpunum:int, 
         CCexpress = ModuleData.loadModels(
             modelsPath = { 'extEDVID': 'models/MLP_CC_extEDVID.pkl' })
         for p in CCexpress.predictors:
-            results[p] = CCexpress.predictors[p].model.predict_proba( inputData.X[ p ] )
+            X = generateXmat( inputData, p)
+            results[p] = CCexpress.predictors[p].model.predict_proba( X )
             logger.info(
                 datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Running CCexpress : Running ' + p + ' predictor: ...done')
         logger.info(
@@ -103,7 +104,8 @@ def predict( input: Path, outdir: Path, module: str, outformat:str, cpunum:int, 
                          'MHD': 'models/MLP_NBS_MHD.pkl'
                          })
         for p in NBSexpress.predictors:
-            results[p] = NBSexpress.predictors[p].model.predict_proba( inputData.X[ p ])
+            X = generateXmat(inputData, p)
+            results[p] = NBSexpress.predictors[p].model.predict_proba( X )
             logger.info(
                 datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Running NBSexpress : Running ' + p + ' predictor: ...done')
         logger.info(
@@ -116,7 +118,8 @@ def predict( input: Path, outdir: Path, module: str, outformat:str, cpunum:int, 
         LRRexpress = ModuleData.loadModels(
             modelsPath={'LxxLxL': 'models/MLP_LRR_LxxLxL.pkl'})
         for p in LRRexpress.predictors:
-            results[p] = LRRexpress.predictors[p].model.predict_proba( inputData.X[ p ] )
+            X = generateXmat(inputData, p)
+            results[p] = LRRexpress.predictors[p].model.predict_proba( X )
             logger.info(
                 datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Running LRRexpress : Running ' + p + ' predictor: ...done')
         logger.info(
