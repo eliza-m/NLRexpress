@@ -56,6 +56,7 @@ def predict( input: Path, outdir: Path, module: str, outformat:str, cpunum:int, 
     logger.info(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + '############ NLRexpress started ############ ')
     logger.info(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Input FASTA: ' + str(input) )
 
+    scriptDir = Path(__file__).resolve().parent
 
     if module == 'cc':
         motifs = {key: allMotifs[key] for key in ['extEDVID']}
@@ -79,7 +80,7 @@ def predict( input: Path, outdir: Path, module: str, outformat:str, cpunum:int, 
         logger.info(
             datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Running CCexpress : started')
         CCexpress = ModuleData.loadModels(
-            modelsPath = { 'extEDVID': 'models/MLP_CC_extEDVID.pkl' })
+            modelsPath = { 'extEDVID': str(scriptDir) + '/models/MLP_CC_extEDVID.pkl' })
         for p in CCexpress.predictors:
             X = generateXmat( inputData, p)
             results[p] = CCexpress.predictors[p].model.predict_proba( X )
@@ -93,15 +94,15 @@ def predict( input: Path, outdir: Path, module: str, outformat:str, cpunum:int, 
             datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Running NBSexpress : started')
         NBSexpress = ModuleData.loadModels(
             modelsPath={
-                          'VG': 'models/MLP_NBS_VG.pkl',
-                         'P-loop': 'models/MLP_NBS_P-loop.pkl',
-                         'RNSB-A': 'models/MLP_NBS_RNSB-A.pkl',
-                         'RNSB-B': 'models/MLP_NBS_RNSB-B.pkl',
-                         'RNSB-C': 'models/MLP_NBS_RNSB-C.pkl',
-                         'RNSB-D': 'models/MLP_NBS_RNSB-D.pkl',
-                         'Walker-B': 'models/MLP_NBS_Walker-B.pkl',
-                         'GLPL': 'models/MLP_NBS_GLPL.pkl',
-                         'MHD': 'models/MLP_NBS_MHD.pkl'
+                          'VG': str(scriptDir) + '/models/MLP_NBS_VG.pkl',
+                         'P-loop': str(scriptDir) + '/models/MLP_NBS_P-loop.pkl',
+                         'RNSB-A': str(scriptDir) + '/models/MLP_NBS_RNSB-A.pkl',
+                         'RNSB-B': str(scriptDir) + '/models/MLP_NBS_RNSB-B.pkl',
+                         'RNSB-C': str(scriptDir) + '/models/MLP_NBS_RNSB-C.pkl',
+                         'RNSB-D': str(scriptDir) + '/models/MLP_NBS_RNSB-D.pkl',
+                         'Walker-B': str(scriptDir) + '/models/MLP_NBS_Walker-B.pkl',
+                         'GLPL': str(scriptDir) + '/models/MLP_NBS_GLPL.pkl',
+                         'MHD': str(scriptDir) + '/models/MLP_NBS_MHD.pkl'
                          })
         for p in NBSexpress.predictors:
             X = generateXmat(inputData, p)
@@ -116,7 +117,7 @@ def predict( input: Path, outdir: Path, module: str, outformat:str, cpunum:int, 
         logger.info(
             datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Running LRRexpress ...started')
         LRRexpress = ModuleData.loadModels(
-            modelsPath={'LxxLxL': 'models/MLP_LRR_LxxLxL.pkl'})
+            modelsPath={'LxxLxL': str(scriptDir) + '/models/MLP_LRR_LxxLxL.pkl'})
         for p in LRRexpress.predictors:
             X = generateXmat(inputData, p)
             results[p] = LRRexpress.predictors[p].model.predict_proba( X )
