@@ -20,6 +20,17 @@ def cli():
                         Predifined prediction modules :
                           - cc  :  CCexpress contains motif predictors for the CC domain:
                                                     extEDVID: rdhhhdhEDVID
+                                                    
+                          - tir  :  TIRexpress contains motif predictors for the TIR domain:
+                                                    bA: FLSFRGEDTR
+                                                    aA: KNFTSHL
+                                                    bC: SRISIVVF
+                                                    aC: WCLDEL
+                                                    bD: VLPVFYD
+                                                    aD1: PSDVR
+                                                    aD3: WREALTEVANLSG
+                                                    
+
                           - nbs :  NBSexpress contains motif predictors for the NBS/NBARC domain:
                                                     VG:            bbGRx
                                                     P-loop:        GbGGbGKTT
@@ -32,7 +43,9 @@ def cli():
                                                     MHD:           bHD
                           - lrr  :  LRRexpress contains motif predictors for the NBS/NBARC domain:
                                                     LRR pattern:   LxxLxL
-                          - all  :  All modules above: CC, NBS and LRR espress """)
+                                                    
+                          - all  :  All modules above: CC, TIR, NBS and LRR espress """)
+
 @click.option('--outformat', required=False, default="all", help="""\b
                         Output format layout :
                           - short          : Only the hits with more than 20% probability will be printed ( one line per motif )
@@ -60,13 +73,19 @@ def predict( input: Path, outdir: Path, module: str, outformat:str, cpunum:int, 
 
     if module == 'cc':
         motifs = {key: allMotifs[key] for key in ['extEDVID']}
+
+    elif module == 'tir':
+        motifs = { key: allMotifs[key] for key in
+                                     ["bA", "aA", "bC", "aC", "bD", "aD1", "aD3"] }
     elif module == 'nbs':
         motifs = { key: allMotifs[key] for key in
                                      ["VG", "P-loop", "Walker-B", "RNSB-A", "RNSB-B", "RNSB-C", "RNSB-D", "GLPL", "MHD" ] }
     elif module == 'lrr':
         motifs = { key: allMotifs[key] for key in ['LxxLxL'] }
+
     elif module == 'all':
         motifs = allMotifs
+
     else:
         print("No such module present. Please use one of the following: cc, nbs, lrr, all")
         raise()
@@ -88,6 +107,27 @@ def predict( input: Path, outdir: Path, module: str, outformat:str, cpunum:int, 
                 datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Running CCexpress : Running ' + p + ' predictor: ...done')
         logger.info(
             datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Running CCexpress : done')
+
+    if module in ("tir", "all") :
+        logger.info(
+            datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Running TIRexpress : started')
+        TIRxpress = ModuleData.loadModels(
+            modelsPath={
+                         'bA': str(scriptDir) + '/models/MLP_TIR_bA.pkl',
+                         'aA': str(scriptDir) + '/models/MLP_TIR_aA.pkl',
+                         'bC': str(scriptDir) + '/models/MLP_TIR_bC.pkl',
+                         'aC': str(scriptDir) + '/models/MLP_TIR_aC.pkl',
+                         'bD': str(scriptDir) + '/models/MLP_TIR_bD.pkl',
+                         'aD1': str(scriptDir) + '/models/MLP_TIR_aD1.pkl',
+                         'aD3': str(scriptDir) + '/models/MLP_TIR_aD3.pkl'
+                         })
+        for p in TIRexpress.predictors:
+            X = generateXmat(inputData, p)
+            results[p] = TIRexpress.predictors[p].model.predict_proba( X )
+            logger.info(
+                datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Running TIRexpress : Running ' + p + ' predictor: ...done')
+        logger.info(
+            datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Running TIRexpress ...done')
 
     if module in ("nbs", "all") :
         logger.info(

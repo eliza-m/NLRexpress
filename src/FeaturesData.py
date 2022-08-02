@@ -23,6 +23,15 @@ import re
 
 allMotifs = {
     "extEDVID": {"windLeft": 5, "windRight": 5, "motifSpan": 12},
+
+    "bA": {"windLeft": 5, "windRight": 5, "motifSpan": 10},
+    "aA": {"windLeft": 5, "windRight": 5, "motifSpan": 7},
+    "bC": {"windLeft": 5, "windRight": 5, "motifSpan": 8},
+    "aC": {"windLeft": 5, "windRight": 5, "motifSpan": 6},
+    "bD": {"windLeft": 5, "windRight": 5, "motifSpan": 7},
+    "aD1": {"windLeft": 5, "windRight": 5, "motifSpan": 5},
+    "aD3": {"windLeft": 5, "windRight": 5, "motifSpan": 13},
+
     "VG": {"windLeft": 5, "windRight": 5, "motifSpan": 5},
     "P-loop": {"windLeft": 5, "windRight": 5, "motifSpan": 9},
     "RNSB-A": {"windLeft": 5, "windRight": 5, "motifSpan": 10},
@@ -218,7 +227,7 @@ def processFastaFile( input:Path, output:Path) -> dict :
         with open(output, 'w') as outputFile:
             for name in seqData:
                 print('>', name, sep='', file=outputFile)
-                print(seqData[name], file=outputFile)
+                print(''.join(seqData[name].split()), file=outputFile)
 
     except OSError as e:
         print("FASTA file error:", sys.exc_info()[0])
@@ -245,6 +254,7 @@ def runJhmmer( inputFasta:Path, outdir:Path, params:dict ) -> str :
     # new data the same params should be used. For now only cpuNum and targetDB path are customizable
     # from here
 
+    scriptDir = Path(__file__).resolve().parents[1]
     jhhmerLog = subprocess.run(["jackhmmer",
                                 "--cpu", str(params["cpuNum"]),
                                 "-o", "/dev/null",
@@ -254,7 +264,7 @@ def runJhmmer( inputFasta:Path, outdir:Path, params:dict ) -> str :
                                 "--noali",
                                 "--chkhmm", str(outdir) + "/" + str(inputFasta.stem),
                                 inputFasta,
-                                params["targetDB"],
+                                str(scriptDir) + '/' + params["targetDB"],
                                 ],
                    stdout=subprocess.PIPE)
 
