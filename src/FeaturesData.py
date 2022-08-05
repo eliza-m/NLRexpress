@@ -28,8 +28,8 @@ allMotifs = {
     "aA": {"windLeft": 5, "windRight": 5, "motifSpan": 7},
     "bC": {"windLeft": 5, "windRight": 5, "motifSpan": 8},
     "aC": {"windLeft": 5, "windRight": 5, "motifSpan": 6},
-    "bD": {"windLeft": 5, "windRight": 5, "motifSpan": 7},
-    "aD1": {"windLeft": 5, "windRight": 5, "motifSpan": 5},
+    "bDaD1": {"windLeft": 5, "windRight": 5, "motifSpan": 16},
+    #"aD1": {"windLeft": 5, "windRight": 5, "motifSpan": 5},
     "aD3": {"windLeft": 5, "windRight": 5, "motifSpan": 13},
 
     "VG": {"windLeft": 5, "windRight": 5, "motifSpan": 5},
@@ -221,8 +221,8 @@ def processFastaFile( input:Path, output:Path) -> dict :
                     seq += line[:-1]
             seqData[name] = seq
 
-        if len(seqData) > 1000:
-            raise("The input FASTA file contains more than the maximum allowed of 1000 sequences. Please use splitFasta.py to split your input file.")
+        if len(seqData) > 100:
+            raise("The input FASTA file contains more than the maximum allowed of 100 sequences. Please use splitFasta.py to split your input file.")
 
         with open(output, 'w') as outputFile:
             for name in seqData:
@@ -255,7 +255,7 @@ def runJhmmer( inputFasta:Path, outdir:Path, params:dict ) -> str :
     # from here
 
     scriptDir = Path(__file__).resolve().parents[1]
-    jhhmerLog = subprocess.run(["jackhmmer",
+    jhhmerLog = subprocess.run(["/usr/local/bin/jackhmmer",
                                 "--cpu", str(params["cpuNum"]),
                                 "-o", "/dev/null",
                                 "-N", "2",

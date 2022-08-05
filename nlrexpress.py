@@ -26,8 +26,9 @@ def cli():
                                                     aA: KNFTSHL
                                                     bC: SRISIVVF
                                                     aC: WCLDEL
-                                                    bD: VLPVFYD
-                                                    aD1: PSDVR
+                                                    #bD: VLPVFYD
+                                                    #aD1: PSDVR
+													bDaD1: VLPVFYDVDPSDVRKQ
                                                     aD3: WREALTEVANLSG
                                                     
 
@@ -111,14 +112,15 @@ def predict( input: Path, outdir: Path, module: str, outformat:str, cpunum:int, 
     if module in ("tir", "all") :
         logger.info(
             datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ':\t' + 'Running TIRexpress : started')
-        TIRxpress = ModuleData.loadModels(
+        TIRexpress = ModuleData.loadModels(
             modelsPath={
                          'bA': str(scriptDir) + '/models/MLP_TIR_bA.pkl',
                          'aA': str(scriptDir) + '/models/MLP_TIR_aA.pkl',
                          'bC': str(scriptDir) + '/models/MLP_TIR_bC.pkl',
                          'aC': str(scriptDir) + '/models/MLP_TIR_aC.pkl',
-                         'bD': str(scriptDir) + '/models/MLP_TIR_bD.pkl',
-                         'aD1': str(scriptDir) + '/models/MLP_TIR_aD1.pkl',
+                         #'bD': str(scriptDir) + '/models/MLP_TIR_bD.pkl',
+						 'bDaD1': str(scriptDir) + '/models/MLP_TIR_bD.pkl',
+                         #'aD1': str(scriptDir) + '/models/MLP_TIR_aD1.pkl',
                          'aD3': str(scriptDir) + '/models/MLP_TIR_aD3.pkl'
                          })
         for p in TIRexpress.predictors:
