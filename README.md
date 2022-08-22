@@ -14,29 +14,29 @@ NLRexpress is an open-source bundle of 17 machine learning-based predictors trai
 
 * __CCexpress__: for an extended version of the EDVID motif: "_RDbbbDbEDVID_" (b - hydrophobic residue), which covers the 3rd alpha helice of the CC domain.
 * __TIRexpress__: comprises 6 predictors for the following conserved motifs found in plant TIR domains : 
-⋅⋅*                              $\beta$A: FLSFRGEDTR
-⋅⋅*                              $\alpha$A: KNFTSHL
-⋅⋅*                              $\beta$C: SRISIVVF
-⋅⋅*                              $\alpha$C: WCLDEL
-⋅⋅*                              $\beta$D$\alpha$D1: VLPVFYDVDPSDVRKQ
-⋅⋅*                              $\alpha$D3: WREALTEVANLSG
+    *$\beta$A: FLSFRGEDTR
+    *$\alpha$A: KNFTSHL
+    *$\beta$C: SRISIVVF
+    *$\alpha$C: WCLDEL
+    *$\beta$D$\alpha$D1: VLPVFYDVDPSDVRKQ
+    *$\alpha$D3: WREALTEVANLSG
 
 * __NBSexpress__: comprises 11 predictors for the following conserved motifs specific to plant NBS/NB-ARC domains : 
-⋅⋅*                              VG:            bbGRx
-⋅⋅*                              P-loop:        GbGGbGKTT
-⋅⋅*                              RNBS-A:        FDbrhWhshs
-⋅⋅*                              Walker-B:      KRbbbbDD
-⋅⋅*                              RNBS-B:        KbbbTTR
-⋅⋅*                              RNBS-C:        LseeeSWeLF
-⋅⋅*                              RNBS-D:        CFLYCSLFP
-⋅⋅*                              GLPL:          GLPLA
-⋅⋅*                              MHD:           bHD
+    *VG:            bbGRx
+    *P-loop:        GbGGbGKTT
+    *RNBS-A:        FDbrhWhshs
+    *Walker-B:      KRbbbbDD
+    *RNBS-B:        KbbbTTR
+    *RNBS-C:        LseeeSWeLF
+    *RNBS-D:        CFLYCSLFP
+    *GLPL:          GLPLA
+    *MHD:           bHD
 
 * __LRRexpress__: for detecting "LxxLxL" motifs in Leucine-rich repeat (LRR) domains.
 
 __Not limited to plant NLRs, the LRRexpress module was developed to be also used for screening other LRR-containing protein classes regardless of their taxonomy.__
 
-The LRRexpress module is a much faster complementary alternative to LRRpredictor[1]. While LRRpredictor consists of a bundle of 8 voting estimators based on secondary structure predictions and sequence variability profiles generated on a large universal sequence database (Uniprot20), LRRexpress does not require the computation of secondary structure predictions and utilises a miniature targeted sequence database using JackHMMER [2][3] which significantly improves the speed of the pipeline with an average of less than 40s per NLR sequence (average times might vary depending on computer specs).
+The LRRexpress module is a much faster complementary alternative to LRRpredictor[1]. While LRRpredictor consists of a bundle of 8 voting estimators based on secondary structure predictions and sequence variability profiles generated on a large universal sequence database (Uniprot20), LRRexpress does not require the computation of secondary structure predictions and utilises a miniature targeted sequence database using JackHMMER [2][3] which significantly improves the speed of the pipeline with an average of less than 40s per NLR sequence (though average times might vary depending on computer specs).
 
 For a limited number of protein sequences (under 100 seq), predictions can be run online on our webserver at https://nlrexpress.biochim.ro/ 
 
@@ -46,38 +46,53 @@ For a limited number of protein sequences (under 100 seq), predictions can be ru
 
 NLRexpress was tested only on Ubuntu 18.04, but older/newer distributions should be compatible. 
 
-####1. Cloning the project:
-	git clone https://github.com/eliza-m/NLRexpress
-  
-####2. Create conda environment
-	cd NLRexpress
-	conda env create -f environment.yml
-  conda activate nlrexpress
-  
+#### 1. Cloning the project:
+```
+git clone https://github.com/eliza-m/NLRexpress
+```
+
+#### 2. Create conda environment
+```
+cd NLRexpress
+conda env create -f environment.yml
+conda activate nlrexpress
+```
+
 If conda (anaconda/miniconda) is not installed, installation steps can be found at https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html
 	
-####3. Install HMMER v3.3 (Nov 2019)
+#### 3. Install HMMER v3.3 (Nov 2019)
+
 The HMMER version 3.3 can be installed in Ubuntu 18 via: 
-	sudo apt-get install hmmer
+```
+sudo apt-get install hmmer
+```
 
 However, this might be superseded in the future by up-coming releases. The HMMER version archive can be found at : http://hmmer.org/download.html
 
 
-####3. Download predictor models
+#### 4. Download predictor models
+```
   wget https://nlrexpress.biochim.ro/datasets/models.tar.gz
   tar -xf models.tar.gz
-
+```
 	
-Now the installation is complete and you can use now NLRexpress. 
+Now the installation is complete and NLRexpress ready for use. 
 
+  
   
 ## Usage
 
-NLRexpress requires the conda environment to be active :
+The input file can contain multiple protein sequences in FASTA format. There is no constraint for the number of characters per line. The name of the query protein will be defined as the string beginning after the first '>' symbol until the first occurrence of a space character.
+
+An example is provided with the repository. (Please note that the NLRexpress requires the conda environment to be active) :
+
+While running a status log will be printed on the screen.
 
 ```
 user@server:/home/user/git//NLRexpress$ conda activate nlrexpress
+
 (nlrexpress) user@server:/home/user/git//NLRexpress$ python nlrexpress.py --input sample/input/zar1_rpp1.fa --outdir sample/output_ref/ --module all
+
 22/08/2022 15:57:49:    ############ NLRexpress started ############
 22/08/2022 15:57:49:    Input FASTA: sample/input/zar1_rpp1.fa
 22/08/2022 15:57:49:    Checking FASTA file - started
@@ -150,28 +165,6 @@ user@server:/home/user/git//NLRexpress$ conda activate nlrexpress
 
 ```
 
-While running a status log will be printed on the screen.
-
-The input file can contain multiple protein sequences in FASTA format. There is no constraint for the number of characters per line. The name of the query protein will be defined as the string beginning after the first '>' symbol until the first occurrence of a space character.
-
-Prediction results will be found within the provided output directory path:
-
-```
-NLRexpress$ ls -l sample/output/
-ls -l sample/output_ref/
--rw-rw-r-- 1 eliza eliza 965535 Aug 22 15:58 zar1_rpp1-1.hmm
--rw-rw-r-- 1 eliza eliza 965525 Aug 22 15:58 zar1_rpp1-2.hmm
--rw-rw-r-- 1 eliza eliza   2100 Aug 22 15:57 zar1_rpp1.fasta_proc
--rw-rw-r-- 1 eliza eliza   5360 Aug 22 15:58 zar1_rpp1.log
--rw-rw-r-- 1 eliza eliza 447768 Aug 22 15:58 zar1_rpp1.long.output.txt
--rw-rw-r-- 1 eliza eliza   7687 Aug 22 15:58 zar1_rpp1.short.output.txt
-```
-
-A sample output for `zar1_rpp1.fa` example can be found in `sample/output_ref/` for comparison purposes.
-
-
-
-
 Customized parameters are described in help mode:
 
 ```
@@ -225,6 +218,23 @@ Options:
   
 ```
 
+
+
+
+Prediction results will be found within the provided output directory path:
+
+```
+NLRexpress$ ls -l sample/output/
+ls -l sample/output_ref/
+-rw-rw-r-- 1 eliza eliza 965535 Aug 22 15:58 zar1_rpp1-1.hmm
+-rw-rw-r-- 1 eliza eliza 965525 Aug 22 15:58 zar1_rpp1-2.hmm
+-rw-rw-r-- 1 eliza eliza   2100 Aug 22 15:57 zar1_rpp1.fasta_proc
+-rw-rw-r-- 1 eliza eliza   5360 Aug 22 15:58 zar1_rpp1.log
+-rw-rw-r-- 1 eliza eliza 447768 Aug 22 15:58 zar1_rpp1.long.output.txt
+-rw-rw-r-- 1 eliza eliza   7687 Aug 22 15:58 zar1_rpp1.short.output.txt
+```
+
+A sample output for `zar1_rpp1.fa` example can be found in `sample/output_ref/` for comparison purposes.
 
 Two types of output formats are provided:  a summarising and a detailed version.
 
