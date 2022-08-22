@@ -26,26 +26,31 @@ def cli():
                                                     aA: KNFTSHL
                                                     bC: SRISIVVF
                                                     aC: WCLDEL
-                                                    #bD: VLPVFYD
-                                                    #aD1: PSDVR
-													bDaD1: VLPVFYDVDPSDVRKQ
+                                                    bDaD1: VLPVFYDVDPSDVRKQ
                                                     aD3: WREALTEVANLSG
                                                     
 
                           - nbs :  NBSexpress contains motif predictors for the NBS/NBARC domain:
                                                     VG:            bbGRx
                                                     P-loop:        GbGGbGKTT
-                                                    RNSB-A:        FDbrhWhshs
+                                                    RNBS-A:        FDbrhWhshs
                                                     Walker-B:      KRbbbbDD
-                                                    RNSB-B:        KbbbTTR
-                                                    RNSB-C:        LseeeSWeLF
-                                                    RNSB-D:        CFLYCSLFP
+                                                    RNBS-B:        KbbbTTR
+                                                    RNBS-C:        LseeeSWeLF
+                                                    RNBS-D:        CFLYCSLFP
                                                     GLPL:          GLPLA
                                                     MHD:           bHD
+
+
                           - lrr  :  LRRexpress contains motif predictors for the NBS/NBARC domain:
                                                     LRR pattern:   LxxLxL
                                                     
-                          - all  :  All modules above: CC, TIR, NBS and LRR espress """)
+
+                          - all  :  All modules above: CC, TIR, NBS and LRR express 
+                          
+                          
+                          """)
+
 
 @click.option('--outformat', required=False, default="all", help="""\b
                         Output format layout :
