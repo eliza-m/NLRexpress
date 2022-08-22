@@ -14,12 +14,12 @@ NLRexpress is an open-source bundle of 17 machine learning-based predictors trai
 
 * __CCexpress__: for an extended version of the EDVID motif: "_RDbbbDbEDVID_" (b - hydrophobic residue), which covers the 3rd alpha helice of the CC domain.
 * __TIRexpress__: comprises 6 predictors for the following conserved motifs found in plant TIR domains : 
-    * $\beta$A: FLSFRGEDTR
-    * $\alpha$A: KNFTSHL
-    * $\beta$C: SRISIVVF
-    * $\alpha$C: WCLDEL
-    * $\beta$D$\alpha$D1: VLPVFYDVDPSDVRKQ
-    * $\alpha$D3: WREALTEVANLSG
+    * $\beta$ A: FLSFRGEDTR
+    * $\alpha$ A: KNFTSHL
+    * $\beta$ C: SRISIVVF
+    * $\alpha$ C: WCLDEL
+    * $\beta$ D $\alpha$ D1: VLPVFYDVDPSDVRKQ
+    * $\alpha$ D3: WREALTEVANLSG
 
 * __NBSexpress__: comprises 11 predictors for the following conserved motifs specific to plant NBS/NB-ARC domains : 
     * VG:            bbGRx
