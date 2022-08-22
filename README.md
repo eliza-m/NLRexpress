@@ -16,10 +16,10 @@ NLRexpress is an open-source bundle of 17 machine learning-based predictors trai
 * __TIRexpress__: comprises 6 predictors for the following conserved motifs found in plant TIR domains : 
     * $\beta$ A: FLSFRGEDTR
     * $\alpha$ A: KNFTSHL
-    * $\betaC$ : SRISIVVF
-    * $\alphaC$: WCLDEL
-    * $\betaD\alphaD1$: VLPVFYDVDPSDVRKQ
-    * $\alphaD3$: WREALTEVANLSG
+    * $\beta$ C: SRISIVVF
+    * $\alpha$ C: WCLDEL
+    * $\beta$ D $\alpha$ D1: VLPVFYDVDPSDVRKQ
+    * $\alpha$ D3: WREALTEVANLSG
 
 * __NBSexpress__: comprises 11 predictors for the following conserved motifs specific to plant NBS/NB-ARC domains : 
     * VG:            bbGRx
