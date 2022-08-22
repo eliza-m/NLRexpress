@@ -221,7 +221,7 @@ def processFastaFile( input:Path, output:Path) -> dict :
                     seq += line[:-1]
             seqData[name] = seq
 
-        if len(seqData) > 100:
+        if len(seqData) > 1001:
             raise("The input FASTA file contains more than the maximum allowed of 100 sequences. Please use splitFasta.py to split your input file.")
 
         with open(output, 'w') as outputFile:
@@ -255,7 +255,8 @@ def runJhmmer( inputFasta:Path, outdir:Path, params:dict ) -> str :
     # from here
 
     scriptDir = Path(__file__).resolve().parents[1]
-    jhhmerLog = subprocess.run(["/usr/local/bin/jackhmmer",
+    #jhhmerLog = subprocess.run(["/usr/local/bin/jackhmmer",
+    jhhmerLog = subprocess.run(["jackhmmer",
                                 "--cpu", str(params["cpuNum"]),
                                 "-o", "/dev/null",
                                 "-N", "2",

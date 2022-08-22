@@ -82,7 +82,7 @@ def predict( input: Path, outdir: Path, module: str, outformat:str, cpunum:int, 
 
     elif module == 'tir':
         motifs = { key: allMotifs[key] for key in
-                                     ["bA", "aA", "bC", "aC", "bD", "aD1", "aD3"] }
+                                     ["bA", "aA", "bC", "aC", "bDaD1", "aD3"] }
     elif module == 'nbs':
         motifs = { key: allMotifs[key] for key in
                                      ["VG", "P-loop", "Walker-B", "RNSB-A", "RNSB-B", "RNSB-C", "RNSB-D", "GLPL", "MHD" ] }
@@ -123,9 +123,7 @@ def predict( input: Path, outdir: Path, module: str, outformat:str, cpunum:int, 
                          'aA': str(scriptDir) + '/models/MLP_TIR_aA.pkl',
                          'bC': str(scriptDir) + '/models/MLP_TIR_bC.pkl',
                          'aC': str(scriptDir) + '/models/MLP_TIR_aC.pkl',
-                         #'bD': str(scriptDir) + '/models/MLP_TIR_bD.pkl',
-						 'bDaD1': str(scriptDir) + '/models/MLP_TIR_bD.pkl',
-                         #'aD1': str(scriptDir) + '/models/MLP_TIR_aD1.pkl',
+                         'bDaD1': str(scriptDir) + '/models/MLP_TIR_bD-aD1.pkl',
                          'aD3': str(scriptDir) + '/models/MLP_TIR_aD3.pkl'
                          })
         for p in TIRexpress.predictors:
